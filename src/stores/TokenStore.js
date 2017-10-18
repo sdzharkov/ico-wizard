@@ -51,13 +51,14 @@ class TokenStore {
       return;
     }
     
-    Object.keys(this.validToken).filter((key) => {
+    const validKeys = Object.keys(this.validToken).filter((key) => {
       if (this.validToken[key] === VALID) {
         return true;
       } else {
         return false;
       }
     });
+    return validKeys.length === Object.keys(this.validToken).length
   }
 }
 
