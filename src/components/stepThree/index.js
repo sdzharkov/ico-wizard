@@ -13,7 +13,7 @@ import { CrowdsaleBlock } from '../Common/CrowdsaleBlock'
 import { WhitelistInputBlock } from '../Common/WhitelistInputBlock'
 import { NAVIGATION_STEPS, defaultState, VALIDATION_MESSAGES, VALIDATION_TYPES, TEXT_FIELDS, intitialStepThreeValidations, CONTRACT_TYPES } from '../../utils/constants'
 import { inject, observer } from 'mobx-react'
-import { contractStore, crowdsaleStore, pricingStrategyStore, stepThreeValidationsStore, crowdsaleBlockListStore, web3Store, tierCrowdsaleListStore} from '../../stores';
+// import { contractStore, crowdsaleStore, pricingStrategyStore, stepThreeValidationStore, crowdsaleBlockListStore, web3Store, tierCrowdsaleListStore} from '../../stores';
 const { CROWDSALE_SETUP } = NAVIGATION_STEPS
 const { EMPTY, VALID, INVALID } = VALIDATION_TYPES
 const { START_TIME, END_TIME, MINCAP, RATE, SUPPLY, WALLET_ADDRESS, CROWDSALE_SETUP_NAME, ALLOWMODIFYING, DISABLEWHITELISTING } = TEXT_FIELDS
@@ -25,18 +25,20 @@ const { START_TIME, END_TIME, MINCAP, RATE, SUPPLY, WALLET_ADDRESS, CROWDSALE_SE
   //crowdsaleBlockListStore
   //web3,
 	//tierCrowdsaleListStore
-@inject('contractStore', 'crowdsaleBlockListStore', 'pricingStrategyStore', 'web3Store', 'tierStore') @observer
+@inject('contractStore', 'crowdsaleBlockListStore', 'pricingStrategyStore', 
+        'web3Store', 'tierStore', 'stepThreeValidationStore', 'contractStore', 
+        'tierCrowdsaleListStore') @observer
 export class stepThree extends React.Component{
   constructor(props) {
     super(props);
     window.scrollTo(0, 0);
     // const oldState = getOldState(props, defaultState)
-    if (contractStore.crowdsale.addr.length > 0) {
-      contractStore.setContractProperty('pricingStrategy','addr',[]);
-      setExistingContractParams(contractStore.abi, contractStore.addr[0], contractStore.setContractProperty);
+    if (this.props.contractStore.crowdsale && this.props.contractStore.crowdsale.addr.length > 0) {
+      this.props.contractStore.setContractProperty('pricingStrategy','addr',[]);
+      setExistingContractParams(this.props.contractStore.abi, this.props.contractStore.addr[0], this.props.contractStore.setContractProperty);
     }
     // oldState.children = [];
-    crowdsaleBlockListStore.emptyList()
+    this.props.crowdsaleBlockListStore.emptyList()
     this.props.tierStore.setTierProperty("Tier 1", 'name', 0)
     // oldState.crowdsale[0].tier = "Tier 1"
     this.props.tierStore.setTierProperty( "off", 'updatable', 0)
@@ -48,9 +50,18 @@ export class stepThree extends React.Component{
     //console.log('this.state', this.state)
   }
 
-  addCrowdsale() {
+  showErrorMessages = (parent) => {
+    console.log('here!')
+    this.props.tierStore.invalidateToken();
+  }
+
+  addCrowdsale = () => {
     // let newState = {...this.state}
-    let num = crowdsaleBlockListStore.crowdsaleBlockList.length + 1;
+    let num = 1
+    if (this.props.crowdsaleBlockListStore.crowdsaleBlockList) {
+      num = this.props.crowdsaleBlockListStore.crowdsaleBlockList.length + 1;      
+    }
+
     const newTier = {
       tier: "Tier " + (num + 1),
       supply: 0,
@@ -68,11 +79,11 @@ export class stepThree extends React.Component{
       rate: EMPTY
     }
 
-    tierCrowdsaleListStore.addCrowdsaleItem(newTier)
-    stepThreeValidationsStore.addValidationItem(newTierValidations)
+    this.props.tierCrowdsaleListStore.addCrowdsaleItem(newTier)
+    this.props.stepThreeValidationStore.addValidationItem(newTierValidations)
     //newState.crowdsale[num].startTime = newState.crowdsale[num - 1].endTime;
     //newState.crowdsale[num].endTime = defaultCompanyEndDate(newState.crowdsale[num].startTime);
-    pricingStrategyStore.addStrategy({rate: 0});
+    this.props.pricingStrategyStore.addStrategy({rate: 0});
     this.addCrowdsaleBlock(num)
   }
 
@@ -97,7 +108,7 @@ export class stepThree extends React.Component{
   }
 
   addCrowdsaleBlock(num) {
-    crowdsaleBlockListStore.addCrowdsaleBlock(
+    this.props.crowdsaleBlockListStore.addCrowdsaleBlock(
       <CrowdsaleBlock num = {num}/>
     )
   }
@@ -120,7 +131,7 @@ export class stepThree extends React.Component{
     </div>
   }*/
 
-  renderStandardLinkComponent () {
+  renderStandardLinkComponent = () => {
     if(this.props.tierStore.areTiersValid){
       console.log('steeeeeep 33333')
       return this.renderStandardLink()
@@ -137,16 +148,16 @@ export class stepThree extends React.Component{
     </div>
   }
 
-  renderLinkComponent () {
+  renderLinkComponent() {
     //console.log(`stepsAreValid(this.state.validations) || allFieldsAreValid('crowdsale', this.state)`, stepsAreValid(this.state.validations), allFieldsAreValid('crowdsale', this.state))
     if(this.props.tierStore.areTiersValid){
-      // console.log('step 3 is valididididididididididididididididi')
       return this.renderLink()
     }
+    
     console.log('not valid')
     return <div>
       <div onClick={() => this.addCrowdsale()} className="button button_fill_secondary"> Add Tier</div>
-      <div className="button button_fill"> Continue</div>
+      <div onClick={this.showErrorMessages.bind(this)} className="button button_fill"> Continue</div>
     </div>
   }
 

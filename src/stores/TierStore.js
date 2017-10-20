@@ -82,8 +82,20 @@ class TierStore {
 		}))
 		console.log('isValid', isValid)
     return isValid
+	}
+	
+	@action invalidateToken = () => {
+    if (!this.validTiers) {
+      return;
+    }
+		this.validTiers.every((tier, index) => {
+			Object.keys(tier).forEach(key => {
+				if (this.validTiers[index][key] === EMPTY) {
+					this.validTiers[index][key] = INVALID;
+				}
+			});
+		});
   }
-
 }
 
 const tierStore = new TierStore();
