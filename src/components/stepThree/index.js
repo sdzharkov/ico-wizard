@@ -65,6 +65,7 @@ export class stepThree extends React.Component{
     const newTier = {
       tier: "Tier " + (num + 1),
       supply: 0,
+      rate: 0,
       updatable: "off",
       whitelist:[], 
       whiteListElements: [], 
@@ -108,7 +109,8 @@ export class stepThree extends React.Component{
   }
 
   addCrowdsaleBlock(num) {
-    this.props.crowdsaleBlockListStore.addCrowdsaleBlock(
+    // this.props.crowdsaleBlockListStore.addCrowdsaleBlock(
+    this.props.crowdsaleBlockListStore.addCrowdsaleItem(
       <CrowdsaleBlock num = {num}/>
     )
   }
@@ -379,6 +381,7 @@ export class stepThree extends React.Component{
             {tierStore.tiers[0].whitelistdisabled === "yes"?"":whitelistInputBlock}
           </div>
           <div>{crowdsaleBlockListStore.crowdSaleBlockList}</div>
+          {/* <div>{crowdsaleBlockListStore.blockList}</div> */}
           <div className="button-container">
             {this.renderLinkComponent()}
           </div>

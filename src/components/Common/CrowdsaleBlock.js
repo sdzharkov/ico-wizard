@@ -11,9 +11,9 @@ const { START_TIME, END_TIME, RATE, SUPPLY, CROWDSALE_SETUP_NAME, ALLOWMODIFYING
 
 //behaves like normal tier block
  // accesses data from tierstore
- //remove all this.state
+ //remove all this
  //pass down onChange function
-@inject ('tierStore', 'pricingStrategyStore')
+@inject ('tierStore')
 @observer export class CrowdsaleBlock extends React.Component {
   constructor(props) {
     super(props);
@@ -24,8 +24,8 @@ const { START_TIME, END_TIME, RATE, SUPPLY, CROWDSALE_SETUP_NAME, ALLOWMODIFYING
 
   componentDidMount() {
     const { tierStore, num } = this.props
-    const startTime = tierStore[this.props.num - 1].endTime
-    const endTime = defaultCompanyEndDate(tierStore[num].startTime)
+    const startTime = tierStore.tiers[num - 1].endTime
+    const endTime = defaultCompanyEndDate(tierStore.tiers[num-1].startTime)
     tierStore.setTierProperty(startTime, 'startTime', num)
     tierStore.setTierProperty(endTime, 'endTime', num)
   }
@@ -37,14 +37,8 @@ const { START_TIME, END_TIME, RATE, SUPPLY, CROWDSALE_SETUP_NAME, ALLOWMODIFYING
     tierStore.validateTiers(property, num)
   }
 
-  updatePricingStrategyStore = (event, property) => {
-    const { pricingStrategyStore, num } = this.props
-    const value = event.target.value;
-    pricingStrategyStore.setStrategyProperty(value, property, num);
-  }
-
 	render() {
-    let { num, onChange, tierStore, pricingStrategyStore } = this.props
+    let { num, onChange, tierStore } = this.props
     let whitelistInputBlock = <div>
       <div className="section-title">
           <p className="title">Whitelist</p>
@@ -62,7 +56,7 @@ const { START_TIME, END_TIME, RATE, SUPPLY, CROWDSALE_SETUP_NAME, ALLOWMODIFYING
             type='text' 
             title={CROWDSALE_SETUP_NAME} 
             value={tierStore.tiers[num].tier}
-            valid={tierStore.validateTiers[num].tier} 
+            valid={tierStore.validTiers[num].tier} 
             errorMessage={VALIDATION_MESSAGES.TIER} 
             onChange={(e) => this.updateTierStore(e, 'name')}
             description={`Name of a tier, e.g. PrePreIco, PreICO, ICO with bonus A, ICO with bonus B, etc. We simplified that and will increment a number after each tier.`}
@@ -71,10 +65,10 @@ const { START_TIME, END_TIME, RATE, SUPPLY, CROWDSALE_SETUP_NAME, ALLOWMODIFYING
             side='right' 
             type='number' 
             title={RATE} 
-            value={pricingStrategyStore.strategies[num].rate} 
-            valid={tierStore.validateTiers[num].rate} 
+            value={tierStore.tiers[num].rate} 
+            valid={tierStore.validTiers[num].rate} 
             errorMessage={VALIDATION_MESSAGES.RATE} 
-            onChange={(e) => this.updatePricingStrategyStore(e, 'pricingStrategy', num, 'rate')}
+            onChange={(e) => this.updateTierStore(e,'rate')}
             description={`Exchange rate Ethereum to Tokens. If it's 100, then for 1 Ether you can buy 100 tokens`}
           />
           </div>
@@ -84,9 +78,9 @@ const { START_TIME, END_TIME, RATE, SUPPLY, CROWDSALE_SETUP_NAME, ALLOWMODIFYING
             type='datetime-local' 
             title={START_TIME} 
             value={tierStore.tiers[num].startTimeTemp} 
-            valid={tierStore.validateTiers[num].startTime} 
+            valid={tierStore.validTiers[num].startTime} 
             errorMessage={VALIDATION_MESSAGES.START_TIME} 
-            defaultValue={this.props.state.crowdsale[this.props.num - 1].endTime}
+            defaultValue={tierStore.tiers[num - 1].startTime}
             onChange={(e) => this.updateTierStore(e, 'startTime')}
             description={`Date and time when the tier starts. Can't be in the past from the current moment.`}
           />
@@ -95,9 +89,9 @@ const { START_TIME, END_TIME, RATE, SUPPLY, CROWDSALE_SETUP_NAME, ALLOWMODIFYING
             type='datetime-local' 
             title={END_TIME} 
             value={tierStore.tiers[num].endTimeTemp} 
-            valid={tierStore.validateTiers[num].endTime} 
+            valid={tierStore.validTiers[num].endTime} 
             errorMessage={VALIDATION_MESSAGES.END_TIME} 
-            defaultValue={defaultCompanyEndDate(this.props.state.crowdsale[this.props.num - 1].endTime)}
+            defaultValue={defaultCompanyEndDate(tierStore.tiers[num-1].endTime)}
             onChange={(e) => this.updateTierStore(e, 'endTime')}
             description={`Date and time when the tier ends. Can be only in the future.`}
           />
@@ -108,7 +102,7 @@ const { START_TIME, END_TIME, RATE, SUPPLY, CROWDSALE_SETUP_NAME, ALLOWMODIFYING
             type='number' 
             title={SUPPLY} 
             value={tierStore.tiers[num].supply} 
-            valid={tierStore.validateTiers[num].supply} 
+            valid={tierStore.validTiers[num].supply} 
             errorMessage={VALIDATION_MESSAGES.SUPPLY}
             onChange={(e) => this.updateTierStore(e, 'supply')}
             description={`How many tokens will be sold on this tier. Cap of crowdsale equals to sum of supply of all tiers`}
@@ -118,9 +112,8 @@ const { START_TIME, END_TIME, RATE, SUPPLY, CROWDSALE_SETUP_NAME, ALLOWMODIFYING
             title={ALLOWMODIFYING}
             items={["on", "off"]}
             vals={["on", "off"]}
-            state={this.props.state}
             num={num}
-            defaultValue={this.props.state.tierStore.tiers[num].updatable}
+            defaultValue={this.props.tierStore.tiers[num].updatable}
             name={'crowdsale-updatable-' + num}
             onChange={(e) => this.updateTierStore(e, 'updatable')}
             description={`Pandora box feature. If it's enabled, a creator of the crowdsale can modify Start time, End time, Rate, Limit after publishing.`}

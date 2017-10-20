@@ -229,7 +229,7 @@ const { PUBLISH } = NAVIGATION_STEPS
       return console.log(err);
     }
     contractStore.setContractProperty('safeMathLib', 'addr', safeMathLibAddr)
-    let keys = Object.keys(contractStore);
+    let keys = Object.keys(contractStore).filter(key => contractStore[key] !== undefined);
     for(let i=0;i<keys.length;i++){
         let key = keys[i];
         if (contractStore[key].bin){
@@ -300,13 +300,13 @@ const { PUBLISH } = NAVIGATION_STEPS
     let contracts = contractStore;
     let binPricingStrategy = contracts && contracts.pricingStrategy && contracts.pricingStrategy.bin || ''
     let abiPricingStrategy = contracts && contracts.pricingStrategy && contracts.pricingStrategy.abi || []
-    let pricingStrategies = tierStore.tierStore
+    let pricingStrategies = tierStore.tiers
     this.deployPricingStrategyRecursive(0, pricingStrategies, binPricingStrategy, abiPricingStrategy)
   }
 
   deployPricingStrategyRecursive = (i, pricingStrategies, binPricingStrategy, abiPricingStrategy) => {
     const { web3Store, contractStore, tokenStore } = this.props
-    const web3 = web3Store
+    const web3 = web3Store.web3
     var paramsPricingStrategy = this.getPricingStrategyParams(web3, pricingStrategies[i], i, tokenStore)
     console.log("getPricingStrategyParams:");
     console.log(paramsPricingStrategy);
@@ -319,7 +319,7 @@ const { PUBLISH } = NAVIGATION_STEPS
           this.setState(newState);
           return console.log(err);
         }
-        const newPricingStrategy = contractStore.pricingStrategy.add.concat(pricingStrategyAddr)
+        const newPricingStrategy = contractStore.pricingStrategy.addr.concat(pricingStrategyAddr)
         contractStore.setContractProperty('pricingStrategy', 'addr', newPricingStrategy)
         this.deployPricingStrategyRecursive(i, pricingStrategies, binPricingStrategy, abiPricingStrategy);
       })
@@ -394,7 +394,7 @@ const { PUBLISH } = NAVIGATION_STEPS
       this.setState(newState);
       return console.log(err);
     }
-    const newPricingStrategy = contractStore.pricingStrategy.add.concat(pricingStrategyAddr)
+    const newPricingStrategy = contractStore.pricingStrategy.addr.concat(pricingStrategyAddr)
     contractStore.setContractProperty('pricingStrategy', 'addr', newPricingStrategy)
     //newState.loading = false;
     let abiCrowdsale = contractStore && contractStore.crowdsale && contractStore.crowdsale.abi || []

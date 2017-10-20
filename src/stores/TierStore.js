@@ -28,6 +28,10 @@ class TierStore {
   @action addTier = (tier) => {
     this.tiers.push(tier)
 	}
+
+	@action addTierValidations = (validations) => {
+		this.validTiers.push(validations)
+	}
 	
 	@action setTierProperty = (value, property, index) => {
 		console.log('value, property, index', value, property, index)
